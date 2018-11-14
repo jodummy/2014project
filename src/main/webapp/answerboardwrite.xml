@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<?xml-stylesheet href="/ProjectSupporter/css/websquare/anchor.css" type="text/css"?>
+	<html xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:w2="http://www.inswave.com/websquare"
+		xmlns:xf="http://www.w3.org/2002/xforms">
+		<head>
+			<w2:type>DEFAULT</w2:type>
+			<w2:buildDate />
+			<xf:model>
+				<xf:instance>
+					<data xmlns="" />
+				</xf:instance>
+				<w2:dataCollection baseNode="map">
+					<w2:dataMap baseNode="map" id="ui_insertAB">
+						<w2:keyInfo>
+							<w2:key id="ab_name" name="이름"
+								dataType="text">
+							</w2:key>
+							<w2:key id="ab_title" name="제목"
+								dataType="text">
+							</w2:key>
+							<w2:key id="ab_content" name="내용"
+								dataType="text">
+							</w2:key>
+							<w2:key id="ab_password" name="비밀번호"
+								dataType="text">
+							</w2:key>
+						</w2:keyInfo>
+					</w2:dataMap>
+				</w2:dataCollection>
+				<w2:workflowCollection></w2:workflowCollection>
+				<xf:submission id="insertAB"
+					ref='data:json,{"id":"ui_insertAB","key":"abMap"}'
+					target='' action="info/insertAnswerboard.do"
+					method="post" mediatype="application/json" encoding="UTF-8"
+					instance="" replace="" errorHandler="" customHandler=""
+					mode="asynchronous" processMsg="등록중" ev:submit="" ev:submitdone=""
+					ev:submiterror="">
+				</xf:submission>
+			</xf:model>
+			<script type="text/javascript"><![CDATA[
+    scwin.init = function(){
+    	
+    }
+	scwin.btn_insert_onclick = function(e) {
+		var name = inputName.getValue();
+		var title = inputTitle.getValue();
+		var password = inputPassword.getValue();
+		if(name == "" || title == "" || password == "") {
+			alert("필수사항을 입력해주세요");
+			return false;
+		}else if(name.length > 6) {
+			alert("이름길이가 초과되었습니다");
+			return false;
+		}else if(title.length > 33) {
+			alert("제목길이가 초과되었습니다");
+			return false;
+		}else if(password.length > 40) {
+			alert("비밀번호길이가 초과되었습니다");
+			return false;
+		}
+		$w.executeSubmission("insertAB");
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	scwin.homeMove_onclick = function(e) {
+		location.href="../main.do";
+	};
+	
+	scwin.writeMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardwrite.xml");
+	};
+	
+	scwin.listMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	scwin.listMovebtn_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	scwin.ui_init_onclick = function(e) {
+		inputName.setValue("");
+		inputTitle.setValue( "" );
+		inputContent.setValue( "" );
+		inputPassword.setValue( "" );	
+	};
+	]]></script>
+			<style type="text/css"><![CDATA[ ]]></style>
+		</head>
+		<body>
+			<xf:group style="margin: 10px;padding: 10px;" id="">
+				<xf:group style="margin-bottom: 20px;" id="" class="">
+					<xf:trigger ev:onclick="scwin.homeMove_onclick"
+						style="width: 80px;height: 23px;" id="homeMove" type="button"
+						class="btn point mr30">
+						<xf:label><![CDATA[home]]></xf:label>
+					</xf:trigger>
+					<xf:trigger type="button"
+						style="width: 80px;height: 23px;" id="listMove" class="btn point mr30" ev:onclick="scwin.listMove_onclick">
+						<xf:label><![CDATA[게시판]]></xf:label>
+					</xf:trigger>
+					<xf:trigger ev:onclick="scwin.writeMove_onclick"
+						style="width: 80px;height: 23px;" id="writeMove" type="button"
+						class="btn point mr30">
+						<xf:label><![CDATA[글쓰기]]></xf:label>
+					</xf:trigger>
+				</xf:group>
+				<xf:group style="margin-bottom: 20px;" id="" class="">
+					<w2:span style="font-weight:bold;font-size:14pt;"
+						label="글작성" id="" class="modal-title">
+					</w2:span>
+				</xf:group>
+				<xf:group style="" id="">
+					<table summary="" style="width:100%;" id=""
+						class="table table-bordered">
+						<caption></caption>
+						<colgroup>
+							<col style=""></col>
+							<col style=""></col>
+						</colgroup>
+						<tr style="">
+							<th scope="row" style="width: 80px;"
+								class="">
+								이름
+							</th>
+							<td style="" class="">
+								<xf:input style="width:100%;" id="inputName"
+									class="form-control" ref="data:ui_insertAB.ab_name">
+								</xf:input>
+							</td>
+						</tr>
+						<tr style="">
+							<th scope="row" style="" class="">제목</th>
+							<td style="" class="">
+								<xf:input style="width:100%;" id="inputTitle"
+									class="form-control" ref="data:ui_insertAB.ab_title">
+								</xf:input>
+							</td>
+						</tr>
+						<tr style="">
+							<th scope="row" style="" class="">내용</th>
+							<td style="" class="">
+								<xf:textarea
+									style="width:100%;height: 100px;" id="inputContent" class="form-control"
+									ref="data:ui_insertAB.ab_content">
+								</xf:textarea>
+							</td>
+						</tr>
+						<tr style="">
+							<th scope="row" style="" class="">비밀번호</th>
+							<td style="" class="">
+								<xf:input style="width:100%;" id="inputPassword"
+									class="form-control" ref="data:ui_insertAB.ab_password"
+									dataType="" allowChar="" type="password">
+								</xf:input>
+							</td>
+						</tr>
+						<tr>
+							<th colspan="2" scope="row" rowspan="1"
+								style="text-align: center;" class="">
+								<xf:trigger
+									style="width: 80px;height: 23px;margin-right: 3px;" id="ui_init"
+									type="button" class="btn btn-warning" ev:onclick="scwin.ui_init_onclick">
+									<xf:label><![CDATA[재작성]]></xf:label>
+								</xf:trigger>
+								<xf:trigger
+									style="width: 80px;height: 23px;margin-right: 3px;"
+									id="btn_insert" type="button" class="btn btn-warning"
+									ev:onclick="scwin.btn_insert_onclick">
+									<xf:label><![CDATA[등록]]></xf:label>
+								</xf:trigger>
+								<xf:trigger
+									style="width: 80px;height: 23px;" id="listMovebtn" type="button"
+									class="btn btn-warning" ev:onclick="scwin.listMovebtn_onclick">
+									<xf:label><![CDATA[목록]]></xf:label>
+								</xf:trigger>
+							</th>
+						</tr>
+					</table>
+				</xf:group>
+			</xf:group>
+		</body>
+</html>

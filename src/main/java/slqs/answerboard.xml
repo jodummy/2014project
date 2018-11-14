@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ya.rain.bow.answerboard">
+	
+	<!-- 글쓰기 -->
+	<insert id="insertAnswerboard" parameterType="java.util.Map">
+		INSERT INTO ANSWERBOARD
+		(AB_SEQ, AB_NAME, AB_TITLE, AB_CONTENT, AB_REFER, AB_PASSWORD)
+		VALUES
+		(ANSWERBOARD_AB_SEQ.NEXTVAL, #{abMap.ab_name}, #{abMap.ab_title}, #{abMap.ab_content},
+		(SELECT NVL(MAX(AB_REFER),0)+1 FROM ANSWERBOARD ), #{abMap.ab_password})		
+	</insert>	
+	
+	<!-- 답글쓰기 -->
+	<update id="updateReplyboard" parameterType="java.util.Map">
+		UPDATE ANSWERBOARD SET
+		AB_STEP = AB_STEP+1 WHERE
+		(AB_STEP > (SELECT AB_STEP FROM ANSWERBOARD WHERE AB_SEQ =
+		#{abMap.ab_seq})) AND
+		AB_REFER = (SELECT AB_REFER FROM ANSWERBOARD WHERE AB_SEQ = #{abMap.ab_seq})		
+	</update>
+	<insert id="insertReplyboard" parameterType="java.util.Map">
+		INSERT INTO ANSWERBOARD
+		(AB_SEQ, AB_NAME, AB_TITLE, AB_CONTENT, AB_REFER, AB_STEP, AB_DEPTH, AB_PASSWORD)
+		VALUES
+		(ANSWERBOARD_AB_SEQ.NEXTVAL, #{abMap.ab_name}, #{abMap.ab_title}, #{abMap.ab_content},
+		(SELECT AB_REFER FROM ANSWERBOARD WHERE AB_SEQ = #{abMap.ab_seq}),
+		(SELECT AB_STEP+1 FROM
+		ANSWERBOARD WHERE AB_SEQ = #{abMap.ab_seq}),
+		(SELECT AB_DEPTH+1 FROM ANSWERBOARD WHERE
+		AB_SEQ = #{abMap.ab_seq}), #{abMap.ab_password})		
+	</insert>	
+	
+	<!-- 게시글 상세보기 -->
+	<select id="selectOneAnswerboard" resultType="abDto" parameterType="java.util.Map">
+		SELECT AB_SEQ, AB_NAME, AB_TITLE, NVL(AB_CONTENT, ' ') AB_CONTENT, AB_REFER, AB_STEP, AB_DEPTH, AB_READCOUNT,
+		AB_DELFLAG, AB_REGDATE
+		FROM ANSWERBOARD WHERE AB_SEQ = #{abMap.ab_seq}
+	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="updateAnswerboardReadCnt" parameterType="java.util.Map">
+		UPDATE ANSWERBOARD
+		SET AB_READCOUNT=AB_READCOUNT+1 WHERE AB_SEQ = #{abMap.ab_seq}		
+	</update>
+	
+	<!-- 글수정 -->
+	<update id="updateAnswerboardModify" parameterType="java.util.Map">
+		UPDATE ANSWERBOARD SET
+		AB_TITLE=#{abMap.ab_title}, AB_CONTENT=#{abMap.ab_content}, AB_REGDATE=SYSDATE WHERE AB_SEQ = #{abMap.ab_seq}		
+	</update>
+	
+	<!-- 유저 게시판 리스트조회 -->
+	<select id="selectListAnswerboard" resultType="abDto" parameterType="pagingDto">
+		SELECT *
+		FROM (	SELECT ROWNUM RNUM, P.*
+				FROM (	SELECT *
+						FROM ANSWERBOARD
+						ORDER BY AB_REFER DESC, AB_STEP ) P )
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>	
+	
+	<!-- 유저 게시판 리스트총갯수 -->
+	<select id="selectOneCntAnswerboard" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*),0)
+		FROM ANSWERBOARD	
+	</select>
+	
+	<!-- 비밀번호확인 -->
+	<select id="selectOneChkAnswerboard" resultType="java.lang.Integer" parameterType="java.util.Map">
+		SELECT NVL(COUNT(*), 0)
+		FROM ANSWERBOARD
+		WHERE AB_SEQ = #{abMap.ab_seq}
+		AND AB_PASSWORD = #{abMap.ab_password}
+		AND AB_DELFLAG = 'N'
+	</select>
+	
+	<!-- 글 DELFLAG처리 -->
+	<update id="updateDelAnswerboard" parameterType="java.util.Map">
+		UPDATE ANSWERBOARD SET AB_DELFLAG='Y'
+		WHERE AB_SEQ = #{abMap.ab_seq}
+	</update>
+	
+</mapper>

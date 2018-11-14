@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ya.rain.bow.project">
+
+	<!-- 프로젝트 생성 -->
+	<insert id="insertProject" parameterType="prjDto">
+		INSERT INTO PROJECT
+		(PRJ_NO, DEPT_NO, PRJ_NAME, PRJ_START, PRJ_LAST)
+		VALUES(PROJECT_PRJ_NO_SEQ.NEXTVAL, #{dept_no}, #{prj_name}, #{prj_start}, #{prj_last})
+	</insert>
+	
+	<!-- 프로젝트일정 생성 -->
+	<insert id="insertProjectSchdule" parameterType="prjsDto">
+		INSERT INTO PROJECTSCHDULE
+		<choose>
+			<when test="prjs_name != null">
+				(PRJ_NO, PRJS_ITEM, PRJS_REFER, PRJS_STEP, PRJS_DEPTH, PRJS_TERM, PRJS_NAME)
+				VALUES (#{prj_no}, #{prjs_item}, #{prjs_refer}, #{prjs_step}, #{prjs_depth}, #{prjs_term}, #{prjs_name})
+			</when>
+			<otherwise>
+				(PRJ_NO, PRJS_ITEM, PRJS_REFER, PRJS_STEP, PRJS_DEPTH, PRJS_TERM)
+				VALUES (#{prj_no}, #{prjs_item}, #{prjs_refer}, #{prjs_step}, #{prjs_depth}, #{prjs_term})
+			</otherwise>
+		</choose>
+	</insert>
+	
+	<!-- 프로젝트 전체조회 클래스코드 -->
+	<select id="selectListPrjClass" resultType="prjDto" parameterType="pagingDto">
+		SELECT *
+		FROM (	SELECT ROWNUM RNUM, P.*
+				FROM (	SELECT *
+						FROM PROJECT
+						WHERE DEPT_NO IN (	SELECT DEPT_NO
+											FROM DEPARTMENT
+											WHERE DEPT_TOP = #{dept_no} )
+						AND PRJ_DELFLAG = 'N'
+						ORDER BY PRJ_NO DESC ) P )
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>
+	
+	<!-- 프로젝트 전체조회 팀코드-->
+	<select id="selectListPrjTeam" resultType="prjDto" parameterType="pagingDto">
+		SELECT *
+		FROM (	SELECT ROWNUM RNUM, P.*
+				FROM (	SELECT *
+						FROM PROJECT
+						WHERE DEPT_NO IN (	SELECT DEPT_NO
+											FROM DEPARTMENT
+											WHERE DEPT_TOP = (	SELECT DEPT_TOP
+																FROM DEPARTMENT
+																WHERE DEPT_NO = #{dept_no} ))
+						AND PRJ_DELFLAG = 'N'
+						ORDER BY PRJ_NO DESC ) P )
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>
+	
+	<!-- 프로젝트 전체조회 총갯수 클래스코드 -->
+	<select id="selectOnePrjCntClass" resultType="java.lang.Integer" parameterType="pagingDto">
+		SELECT NVL(COUNT(*), 0)
+		FROM PROJECT
+		WHERE DEPT_NO IN (	SELECT DEPT_NO
+							FROM DEPARTMENT
+							WHERE DEPT_TOP = #{dept_no} )
+		AND PRJ_DELFLAG = 'N'
+	</select>
+	
+	<!-- 프로젝트 전체조회 총갯수 팀코드 -->
+	<select id="selectOnePrjCntTeam" resultType="java.lang.Integer" parameterType="pagingDto">
+		SELECT NVL(COUNT(*), 0)
+		FROM PROJECT
+		WHERE DEPT_NO IN (	SELECT DEPT_NO
+							FROM DEPARTMENT
+							WHERE DEPT_TOP = (	SELECT DEPT_TOP
+												FROM DEPARTMENT
+												WHERE DEPT_NO = #{dept_no} ))
+		AND PRJ_DELFLAG = 'N'
+	</select>
+	
+	<!-- 프로젝트일정 전체조회 -->
+	<select id="selectListProjectSchdule" resultType="prjsDto" parameterType="java.lang.Integer">
+		SELECT PRJ_NO, PRJS_ITEM, PRJS_REFER, PRJS_STEP, PRJS_DEPTH, PRJS_TERM, NVL(PRJS_NAME, ' ') PRJS_NAME
+		FROM PROJECTSCHDULE
+		WHERE PRJ_NO = #{prj_no}
+		ORDER BY PRJS_REFER, PRJS_STEP
+	</select>
+	
+	<!-- 프로젝트 상세조회 -->
+	<select id="selectOneProject" resultType="prjDto" parameterType="java.lang.Integer">
+		SELECT PRJ_NO, DEPT_NO, PRJ_NAME, PRJ_START, PRJ_LAST, PRJ_DELFLAG
+		FROM PROJECT
+		WHERE PRJ_NO = #{prj_no}
+	</select>
+	
+	<!-- 프로젝트 delflag -->
+	<update id="updateDelProject" parameterType="java.lang.Integer">
+		UPDATE PROJECT
+		SET PRJ_DELFLAG = 'Y'
+		WHERE PRJ_NO = #{prj_no}
+	</update>
+	
+	<!-- 프로젝트일정 삭제 -->
+	<delete id="deleteProjectSchdule" parameterType="java.lang.Integer">
+		DELETE FROM PROJECTSCHDULE
+		WHERE PRJ_NO = #{prj_no}
+	</delete>
+	
+	<!-- 프로젝트 수정 -->
+	<update id="updateProject" parameterType="prjDto">
+		UPDATE PROJECT
+		SET PRJ_NAME = #{prj_name}, PRJ_START = #{prj_start}, PRJ_LAST = #{prj_last}
+		WHERE PRJ_NO = #{prj_no}
+	</update>
+	
+	
+	
+	<!-- 캘린더조회 클래스 -->
+	<select id="selectOneSchdulecodeClass" resultType="deparDto" parameterType="deparDto">
+		SELECT DEPT_NO, DEPT_NAME, DEPT_TOP, DEPT_DELFLAG, SCHC_CODE
+		FROM DEPARTMENT
+		WHERE DEPT_NO = #{dept_no}
+	</select>
+	
+	<!-- 캘린더조회 팀 -->
+	<select id="selectOneSchdulecodeTeam" resultType="deparDto" parameterType="deparDto">
+		SELECT DEPT_NO, DEPT_NAME, DEPT_TOP, DEPT_DELFLAG, SCHC_CODE
+		FROM DEPARTMENT
+		WHERE DEPT_NO = (	SELECT DEPT_TOP
+							FROM DEPARTMENT
+							WHERE DEPT_NO = #{dept_no})
+	</select>
+	
+	<!-- 부서 전체조회 클래스 -->
+	<select id="selectListDepartmentClass" resultType="deparDto">
+		SELECT DEPT_NO, DEPT_NAME, DEPT_TOP, DEPT_DELFLAG, SCHC_CODE
+		FROM DEPARTMENT
+		WHERE DEPT_DELFLAG = 'N'
+		AND DEPT_NO LIKE 'C%'
+	</select>
+	
+	<!-- 캘린더등록 -->
+	<update id="updateSchdulecode" parameterType="deparDto">
+		UPDATE DEPARTMENT SET SCHC_CODE = #{schc_code} WHERE DEPT_NO = #{dept_no}
+	</update>
+	
+	
+	<!-- 예약목록 code조회 -->
+	<select id="selectOneBookingresource" resultType="bkrDto" parameterType="java.lang.Integer">
+		SELECT BR_NO, BR_NAME, SCHC_CODE, BR_CTGR
+		FROM BOOKINGRESOURCE
+		WHERE BR_NO = #{br_no}
+	</select>	
+	
+	<!-- 예약목록 전체조회 -->
+	<select id="selectListBookingresource" resultType="bkrDto">
+		SELECT BR_NO, BR_NAME, SCHC_CODE, BR_CTGR
+		FROM BOOKINGRESOURCE
+		ORDER BY BR_NO DESC
+	</select>
+	
+	<!-- 예약목록 등록 -->
+	<insert id="insertBookingresource" parameterType="bkrDto">
+		INSERT INTO BOOKINGRESOURCE
+		(BR_NO, BR_NAME)
+		VALUES (BOOKINGRESOURCE_BR_NO_SEQ.NEXTVAL, #{br_name})
+	</insert>
+	
+	<!-- 예약목록 수정 -->
+	<update id="updateBookingresource" parameterType="bkrDto">
+		UPDATE BOOKINGRESOURCE
+		SET BR_NAME = #{br_name}
+		WHERE BR_NO = #{br_no}
+	</update>
+	
+	<!-- 예약목록 삭제 -->
+	<delete id="deleteBookingresource" parameterType="java.lang.Integer">
+		DELETE FROM BOOKINGRESOURCE
+		WHERE BR_NO = #{br_no}
+	</delete>
+	
+	<!-- 예약목록 캘린더등록 -->
+	<update id="updateBookingresourceCode" parameterType="bkrDto">
+		UPDATE BOOKINGRESOURCE SET SCHC_CODE = #{schc_code} WHERE BR_NO = #{br_no}
+	</update>
+		
+</mapper>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/ProjectSupporter/css/websquare/anchor.css" type="text/css"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+    	<w2:type>DEFAULT</w2:type>
+        <w2:buildDate/>
+        <xf:model>
+        	<xf:instance>
+        		<data xmlns="" />
+        	</xf:instance>
+        	<w2:dataCollection baseNode="map">
+        		<w2:dataMap baseNode="map" id="detail">
+        			<w2:keyInfo>
+        				<w2:key id="ab_seq" name="번호"
+        					dataType="number">
+        				</w2:key>
+        				<w2:key id="ab_name" name="작성자"
+        					dataType="text">
+        				</w2:key>
+        				<w2:key id="ab_title" name="제목"
+        					dataType="text">
+        				</w2:key>
+        				<w2:key id="ab_content" name="내용"
+        					dataType="text">
+        				</w2:key>
+        				<w2:key id="ab_readcount" name="조회수"
+        					dataType="number">
+        				</w2:key>
+        				<w2:key id="ab_regdate" name="등록일"
+        					dataType="text">
+        				</w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        		<w2:dataMap baseNode="map" id="seq">
+        			<w2:keyInfo>
+        				<w2:key id="ab_seq" name="번호"
+        					dataType="number">
+        				</w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        	</w2:dataCollection>
+        	<w2:workflowCollection></w2:workflowCollection>
+        	<xf:submission id="detailAB"
+        		ref='data:json,{"id":"seq","key":"abMap"}'
+        		target="data:json,detail"
+        		action="info/selectOneAnswerboard.do" method="post"
+        		mediatype="application/json" encoding="UTF-8" instance=""
+        		replace="" errorHandler="" customHandler=""
+        		mode="asynchronous" processMsg="" ev:submit=""
+        		ev:submitdone="" ev:submiterror="">
+        	</xf:submission>
+        	<xf:submission id="updateAB"
+        		ref='data:json,{"id":"detail","key":"abMap"}' target=""
+        		action="info/updateAnswerboardModify.do" method="post"
+        		mediatype="application/json" encoding="UTF-8" instance=""
+        		replace="" errorHandler="" customHandler=""
+        		mode="asynchronous" processMsg="" ev:submit=""
+        		ev:submitdone="" ev:submiterror="">
+        	</xf:submission>
+        </xf:model>
+        <script type="text/javascript"><![CDATA[
+	scwin.init = function(){
+		seq.set( "ab_seq" , $w.local.getItem( "ab_seq" ) );
+		$w.local.clear();
+		$w.executeSubmission("detailAB");
+    }
+    
+    scwin.homeMove_onclick = function(e) {
+		location.href="../main.do";
+	};
+	
+	scwin.writeMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardwrite.xml");
+	};
+	
+	scwin.listMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	scwin.listMovebtn_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	
+	scwin.btn_modify_onclick = function(e) {
+		var name = inputName.getValue();
+		var title = inputTitle.getValue();
+		var password = inputPassword.getValue();
+		if(name == "" || title == "" || password == "") {
+			alert("필수사항을 입력해주세요");
+			return false;
+		}else if(name.length > 6) {
+			alert("이름길이가 초과되었습니다");
+			return false;
+		}else if(title.length > 33) {
+			alert("제목길이가 초과되었습니다");
+			return false;
+		}else if(password.length > 40) {
+			alert("비밀번호길이가 초과되었습니다");
+			return false;
+		}
+		$w.executeSubmission("updateAB");
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	]]></script>
+    </head>
+    <body>
+    	<xf:group id="" style="margin: 10px;padding: 10px;">
+    		<xf:group class="" id="" style="margin-bottom: 20px;">
+    			<xf:trigger class="btn point mr30"
+    				ev:onclick="scwin.homeMove_onclick" id="homeMove"
+    				style="width: 80px;height: 23px;" type="button">
+    				<xf:label><![CDATA[home]]></xf:label>
+    			</xf:trigger>
+    			<xf:trigger class="btn point mr30"
+    				ev:onclick="scwin.listMove_onclick" id="listMove"
+    				style="width: 80px;height: 23px;" type="button">
+    				<xf:label><![CDATA[게시판]]></xf:label>
+    			</xf:trigger>
+    			<xf:trigger class="btn point mr30"
+    				ev:onclick="scwin.writeMove_onclick" id="writeMove"
+    				style="width: 80px;height: 23px;" type="button">
+    				<xf:label><![CDATA[글쓰기]]></xf:label>
+    			</xf:trigger>
+    		</xf:group>
+    		<xf:group class="" id="" style="margin-bottom: 20px;">
+    			<w2:span class="modal-title" id="" label="게시판 수정"
+    				style="font-weight:bold;font-size:14pt;">
+    			</w2:span>
+    		</xf:group>
+    		<xf:group id="" style="">
+    			<table class="table table-bordered" id=""
+    				style="width:100%;" summary="">
+    				<caption></caption>
+    				<colgroup>
+    					<col style=""></col>
+    					<col style=""></col>
+    				</colgroup>
+    				<tr style="">
+    					<th class="" scope="row">번호</th>
+    					<td class="">
+    						<xf:input class="form-control" id=""
+    							readOnly="true" ref="data:detail.ab_seq"
+    							style="width: 100%">
+    						</xf:input>
+    					</td>
+    				</tr>
+    				<tr style="">
+    					<th class="" scope="row">등록일</th>
+    					<td class="">
+    						<xf:input class="form-control" id=""
+    							readOnly="true" ref="data:detail.ab_regdate"
+    							style="width: 100%;">
+    						</xf:input>
+    					</td>
+    				</tr>
+    				<tr style="">
+    					<th class="" scope="row">조회수</th>
+    					<td class="">
+    						<xf:input class="form-control" id=""
+    							readOnly="true" ref="data:detail.ab_readcount"
+    							style="width: 100%;">
+    						</xf:input>
+    					</td>
+    				</tr>
+    				<tr style="">
+    					<th class="" scope="row" style="width: 80px;">
+    						이름
+    					</th>
+    					<td class="" style="">
+    						<xf:input class="form-control" id="inputName"
+    							readOnly="" ref="data:detail.ab_name"
+    							style="width: 100%;">
+    						</xf:input>
+    					</td>
+    				</tr>
+    				<tr style="">
+    					<th class="" scope="row" style="">제목</th>
+    					<td class="" style="">
+    						<xf:input class="form-control" id="inputTitle"
+    							readOnly="" ref="data:detail.ab_title"
+    							style="width: 100%;">
+    						</xf:input>
+    					</td>
+    				</tr>
+    				<tr style="">
+    					<th class="" scope="row" style="">내용</th>
+    					<td class="" style="">
+    						<xf:textarea class="form-control" id=""
+    							readOnly="" ref="data:detail.ab_content"
+    							style="width:100%;height: 100px;">
+    						</xf:textarea>
+    					</td>
+    				</tr>
+    				<tr>
+    					<th class="" colspan="2" rowspan="1" scope="row"
+    						style="text-align: center;">
+    						<xf:trigger class="btn btn-warning"
+    							ev:onclick="scwin.btn_modify_onclick" id="btn_modify"
+    							style="width: 80px;height: 23px;margin-right: 3px;"
+    							type="button">
+    							<xf:label><![CDATA[수정]]></xf:label>
+    						</xf:trigger>
+    						<xf:trigger class="btn btn-warning"
+    							ev:onclick="scwin.listMovebtn_onclick" id="listMovebtn"
+    							style="width: 80px;height: 23px;" type="button">
+    							<xf:label><![CDATA[목록]]></xf:label>
+    						</xf:trigger>
+    					</th>
+    				</tr>
+    			</table>
+    		</xf:group>
+    	</xf:group>
+    </body>
+</html>

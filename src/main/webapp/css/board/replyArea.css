@@ -1,0 +1,11 @@
+#replyArea {
+	border-radius: 8px;
+	border: 1px solid #b3b3b3;
+	padding: 5px;
+}
+#replyArea, .replyInputArea {
+	display: none;
+}
+#replyArea, #replyAreaList, #replyArea textarea {
+	width: 100%;
+}

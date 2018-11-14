@@ -1,0 +1,56 @@
+.dragAndDropDiv {
+	position: relative;
+	border: 2px solid #b3b3b3;
+	width: 100%;
+	height: 100px;
+	text-align: center;
+	overflow: hidden;
+}
+
+.text_bg {
+	width: 100%;
+	text-align: center;
+	color: #d9d9d9;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+#fileTable {
+	position: absolute;
+	width: 98%;
+	margin-left: 1%;
+}
+
+.fileList {
+	font-size: 12px;
+}
+
+#tabFileName {
+	text-align: left;
+}
+
+#tabFileSize {
+	text-align: center;
+	width: 70px;
+}
+
+#tabFileDel {
+	width: 55px;
+	text-align: center;
+}
+
+.filename {
+	text-align: left;
+}
+
+.filesize {
+	text-align: right;
+}
+
+.hide {
+	display: none;
+}
+
+.delBtn {
+	text-align: center;
+}

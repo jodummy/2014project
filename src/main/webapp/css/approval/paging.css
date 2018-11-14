@@ -1,0 +1,27 @@
+@CHARSET "UTF-8";
+.board_title {
+	text-align: left;
+}
+#modalBoard_title{
+	border: 1px solid #b3b3b3;
+}
+#boardTable, th {
+	text-align: center;
+}
+#keyWordTextBox {
+	border: 1px solid #b3b3b3;
+}
+.center {
+	text-align: center;
+}
+.pageArrow {
+	width: 67px;
+}
+.pageBlank {}
+.pageNumbers {
+	text-align: center;
+	width: 200px;
+}
+.searchRst {
+	background: yellow;
+}

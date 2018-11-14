@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/ProjectSupporter/css/websquare/anchor.css" type="text/css"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:w2="http://www.inswave.com/websquare" xmlns:xf="http://www.w3.org/2002/xforms">
+    <head>
+    	<w2:type>DEFAULT</w2:type>
+        <w2:buildDate/>
+        <xf:model>
+        	<xf:instance>
+        		<data xmlns="" />
+        	</xf:instance>
+        	<w2:dataCollection baseNode="map">
+        		<w2:dataList baseNode="list" repeatNode="map"
+        			id="listsAB" saveRemovedData="true">
+        			<w2:columnInfo>
+        				<w2:column id="ab_seq" name="번호"
+        					dataType="text">
+        				</w2:column>
+        				<w2:column id="ab_name" name="작성자"
+        					dataType="text">
+        				</w2:column>
+        				<w2:column id="ab_title" name="제목"
+        					dataType="text">
+        				</w2:column>
+        				<w2:column id="ab_readcount" name="조회수"
+        					dataType="text">
+        				</w2:column>
+        				<w2:column id="ab_regdate" name="등록일"
+        					dataType="text">
+        				</w2:column>
+        			</w2:columnInfo>
+        		</w2:dataList>
+        		<w2:dataMap baseNode="map" id="paging">
+        			<w2:keyInfo>
+        				<w2:key id="index" name="페이지번호"
+        					dataType="number">
+        				</w2:key>
+        				<w2:key id="pageTotal" name="페이지총갯수"
+        					dataType="number">
+        				</w2:key>
+        			</w2:keyInfo>
+        		</w2:dataMap>
+        	</w2:dataCollection>
+        	<w2:workflowCollection></w2:workflowCollection>
+        	<xf:submission id="selectList" ref="data:json,paging"
+        		target='data:json,[{"id":"listsAB","key":"abLists"},"paging"]'
+        		action="info/selectListAnswerboard.do" method="post"
+        		mediatype="application/json" encoding="UTF-8" instance=""
+        		replace="" errorHandler="" customHandler=""
+        		mode="synchronous" processMsg="" ev:submit=""
+        		ev:submitdone="" ev:submiterror="">
+        	</xf:submission>
+        </xf:model>
+        <script type="text/javascript"><![CDATA[
+	scwin.init = function(){
+		paging.set( "index" , 0 );
+    	$w.executeSubmission("selectList");
+    	if(paging.get("pageTotal") == 0) {
+			pageList.setCount(1);
+    	}else {
+			pageList.setCount(paging.get("pageTotal"));
+    	}
+    }     
+	
+	scwin.homeMove_onclick = function(e) {
+		location.href="../main.do";
+	};
+	
+	scwin.writeMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardwrite.xml");
+	};
+	
+	scwin.listMove_onclick = function(e) {
+		$w.url("/ProjectSupporter/answerboardList.xml");
+	};
+	
+	scwin.pageList_onclick = function(idx) {
+		paging.set( "index" , idx-1 );
+	    $w.executeSubmission("selectList");		
+	};
+	
+	scwin.ui_gv_oncellclick = function(row,col) {
+		var id = ui_gv.getColumnID( col );
+		if(id == "ab_title") {
+			$w.local.setItem("ab_seq", listsAB.getCellData( row , "ab_seq" ));
+			$w.url("/ProjectSupporter/answerboardDetail.xml");
+		}
+	};
+	]]></script>
+    </head>
+    <body>
+    	<xf:group style="margin: 10px;padding: 10px;" id="">
+    		<xf:group style="margin-bottom: 20px;" id="" class="">
+    			<xf:trigger ev:onclick="scwin.homeMove_onclick"
+    				style="width: 80px;height: 23px;" id="homeMove" type="button"
+    				class="btn point mr30">
+    				<xf:label><![CDATA[home]]></xf:label>
+    			</xf:trigger>
+    			<xf:trigger ev:onclick="scwin.listMove_onclick"
+    				style="width: 80px;height: 23px;" id="listMove" type="button"
+    				class="btn point mr30">
+    				<xf:label><![CDATA[게시판]]></xf:label>
+    			</xf:trigger>
+    			<xf:trigger ev:onclick="scwin.writeMove_onclick"
+    				style="width: 80px;height: 23px;" id="writeMove" type="button"
+    				class="btn point mr30">
+    				<xf:label><![CDATA[글쓰기]]></xf:label>
+    			</xf:trigger>
+    		</xf:group>
+    		<xf:group style="margin-bottom: 20px;" id="" class="">
+    			<w2:span style="font-weight:bold;font-size:14pt;" id=""
+    				label="게시판 목록" class="modal-title">
+    			</w2:span>
+    		</xf:group><xf:group style="margin-bottom: 10px;" id="">
+    			<w2:gridView scrollByColumnAdaptive="false"
+    				fixedColumnWithHidden="true" dataList="listsAB"
+    				summaryAuto="false" useShiftKey="true"
+    				style="height: 240px;" scrollByColumn="false"
+    				ignoreCellClick="false" id="ui_gv" useFilterList="false"
+    				summaryOnlyAuto="false" ignoreToggleOnDisabled="false"
+    				readOnly="true" ev:oncellclick="scwin.ui_gv_oncellclick">
+    				<w2:header style="" id="header1">
+    					<w2:row style="" id="row1">
+    						<w2:column width="100" inputType="text"
+    							style="height:20px;" id="column1" value="번호"
+    							blockSelect="false" displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px;" id="column3" value="작성자"
+    							blockSelect="false" displayMode="label">
+    						</w2:column>
+    						<w2:column width="200" inputType="text"
+    							style="height:20px;" id="column5" value="제목"
+    							blockSelect="false" displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px;" id="column7" value="조회수"
+    							blockSelect="false" displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px;" id="column9" value="등록일"
+    							blockSelect="false" displayMode="label">
+    						</w2:column>
+    					</w2:row>
+    				</w2:header>
+    				<w2:gBody style="" id="gBody1">
+    					<w2:row style="" id="row2">
+    						<w2:column width="100" inputType="text"
+    							style="height:20px" id="ab_seq" blockSelect="false"
+    							displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px" id="ab_name" blockSelect="false"
+    							displayMode="label">
+    						</w2:column>
+    						<w2:column width="200" inputType="text"
+    							style="height:20px;" id="ab_title" blockSelect="false"
+    							displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px" id="ab_readcount" blockSelect="false"
+    							displayMode="label">
+    						</w2:column>
+    						<w2:column width="100" inputType="text"
+    							style="height:20px" id="ab_regdate" blockSelect="false"
+    							displayMode="label">
+    						</w2:column>
+    					</w2:row>
+    				</w2:gBody>
+    			</w2:gridView>
+    		</xf:group>
+    		<xf:group style="" id="">
+    			<w2:pageList ev:onclick="scwin.pageList_onclick"
+    				pageSize="5" displayButtonType="display" displayFormat="#"
+    				style="width: 350px;height: 21px;" id="pageList">
+    			</w2:pageList>
+    		</xf:group>
+    	</xf:group></body>
+</html>

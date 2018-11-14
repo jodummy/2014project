@@ -1,0 +1,64 @@
+@CHARSET "UTF-8";
+.center {
+	text-align: center;
+}
+table {
+	border-color: grey;
+}
+
+tr {
+	display: table-row;
+	vertical-align: inherit;
+	border-color: inherit;
+}
+
+h3 {
+	font-weight: bold;
+}
+
+.navi {
+	padding-top: 17px;
+	font-size: small;
+	color: gray;
+}
+
+div span {
+	font-weight: bold;
+}
+
+.navi span {
+	color: black;
+}
+
+.pageArrow {
+	width: 67px;
+}
+.pageBlank {}
+
+.pageNumbers {
+	text-align: left;
+	width: 167px;
+}
+
+.txttitle {
+	font-weight: bolder;
+	padding-bottom: 7px;
+}
+
+.totalpadleft {
+	padding-left: 4%;
+}
+
+.doctotalgauge {
+	float: left;
+	width: 91%;
+}
+
+.selectdoccount {
+	float: left;
+	padding: 0px 10px 10px 0px;
+}
+
+#total {
+	padding-left: 57px;
+}

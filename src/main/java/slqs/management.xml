@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ya.rain.bow.management">
+
+	<!-- 2. ROWNUM Query -->
+	<!--start / last s = 1 , last = selectTotalPaging 검색한 값 받아오기 -->
+	<!-- 2. Total Query -->
+	<select id="selectTotalPaging" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*),0)
+		FROM MEMBER
+		WHERE MEM_DELFLAG = 'N'
+	</select>
+	<!--팀 토탈 -->
+	<select id="selectTotalPagingTeam" resultType="java.lang.Integer">
+		SELECT NVL (COUNT
+		(*),0)
+		FROM DEPARTMENT d
+		WHERE d.DEPT_DELFLAG ='N'
+		AND d.DEPT_TOP != '0'
+	</select>
+	<!-- class 토탈 -->
+	<select id="selectTotalPagingClass" resultType="java.lang.Integer">
+		SELECT NVL(COUNT
+		(*), 0)
+		FROM MEMBER m, DEPARTMENT d
+		WHERE d.DEPT_NO = m.DEPT_NO AND
+		m.AUTH_NO = 2 AND d.DEPT_DELFLAG = 'N'
+	</select>
+
+	<!-- 멤버 리스트 출력 -->
+	<select id="selectListUser" parameterType="pagingDto"
+		resultType="memDto">
+		SELECT *
+		FROM (
+		SELECT ROWNUM RNUM, P.* FROM (
+		SELECT * FROM
+		MEMBER m
+		WHERE MEM_DELFLAG = 'N'
+		ORDER
+		BY m.MEM_RAGDATE DESC
+		) P
+		)
+		WHERE
+		RNUM
+		BETWEEN
+		#{start} AND #{last}
+	</select>
+
+	<!-- 팀 부서 list -->
+	<select id="selectListDepart" parameterType="pagingDto"
+		resultType="deparDto">
+		SELECT *
+		FROM (
+		SELECT ROWNUM RNUM, P.* FROM (
+		SELECT
+		d.DEPT_NO,d.DEPT_NAME,d.DEPT_TOP FROM
+		DEPARTMENT d
+		WHERE d.DEPT_DELFLAG
+		='N'
+		AND d.DEPT_TOP != '0'
+		) P
+		)
+		WHERE
+		RNUM
+		BETWEEN
+		#{start} AND #{last}
+	</select>
+
+	<!-- class list -->
+	<select id="selectListDepartmentClass" parameterType="pagingDto"
+		resultType="deparDto">
+		SELECT *
+		FROM (
+		SELECT ROWNUM RNUM, P.* FROM (
+		SELECT DISTINCT
+		(d.DEPT_NAME),d.DEPT_NO
+		FROM DEPARTMENT d
+		WHERE d.DEPT_NO LIKE 'C%' AND
+		d.DEPT_DELFLAG = 'N'
+		) P
+		)
+		WHERE
+		RNUM
+		BETWEEN
+		#{start}
+		AND #{last}
+	</select>
+
+	<select id="selectListmaster"></select>
+
+	<select id="selectTotalPagingClassUser1" parameterType="java.lang.String"
+		resultType="java.lang.Integer">
+		SELECT
+		NVL(COUNT(*), 0)
+		FROM MEMBER m,
+		DEPARTMENT d
+		WHERE
+		m.DEPT_NO=d.DEPT_NO
+		AND m.DEPT_NO=#{dept_no} AND
+		d.DEPT_DELFLAG = 'N'
+	</select>
+
+	<select id="selectTotalPagingClassUser2" parameterType="java.lang.String"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM
+		MEMBER m, DEPARTMENT d
+		WHERE
+		m.DEPT_NO=d.DEPT_NO
+		AND
+		d.DEPT_TOP=#{dept_no} AND d.DEPT_DELFLAG = 'N'
+	</select>
+
+	<!-- 클래스 인원 확인 -->
+	<select id="selectListDepartmentClassOne" parameterType="pagingDto"
+		resultType="deparDto">
+		SELECT *
+		FROM (
+		SELECT ROWNUM RNUM, P.* FROM (
+		select
+		m.mem_name, d.dept_no, d.dept_top,m.mem_email
+		from MEMBER m,
+		DEPARTMENT
+		d
+		where
+		m.dept_no=d.dept_no
+		and m.dept_no=#{dept_no} AND
+		d.DEPT_DELFLAG =
+		'N'
+		AND m.AUTH_NO !=2
+		union
+		select m.mem_name,
+		d.dept_no,
+		d.dept_top,m.mem_email
+		from
+		MEMBER m, DEPARTMENT d
+		where
+		m.dept_no=d.dept_no
+		and
+		d.dept_top=#{dept_no} AND d.DEPT_DELFLAG =
+		'N'
+		AND m.AUTH_NO !=2
+		) P
+		)
+		WHERE
+		RNUM
+		BETWEEN
+		#{start} AND #{last}
+	</select>
+
+	<!-- 유저 생성 -->
+	<insert id="insertMemberUser" parameterType="memDto">
+		INSERT INTO
+		MEMBER
+		(MEM_NO, MEM_EMAIL, DEPT_NO, MEM_NAME, MEM_TEL,
+		MEM_SEX,
+		MEM_BIRTH,MEM_PHOTONM, MEM_SIGNNM, MEM_RAGDATE)
+		VALUES
+		(MEMBER_MEM_NO_SEQ.nextval,#{mem_email},#{dept_no},#{mem_name},#{mem_tel},#{mem_sex},#{mem_birth},#{mem_photonm},#{mem_signnm},SYSDATE)
+	</insert>
+
+	<!--중복 체크 -->
+	<select id="selectOnevalidityCheck" parameterType="java.lang.String"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(MEM_EMAIL), 0)
+		FROM MEMBER
+		WHERE MEM_EMAIL =
+		#{mem_email}
+	</select>
+
+	<!--유저 상세 조회 -->
+	<select id="selectOneUser" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT m.MEM_BIRTH,
+		m.MEM_EMAIL,
+		m.MEM_NAME,
+		m.MEM_PHOTONM,
+		m.MEM_RAGDATE,
+		m.MEM_TEL,
+		m.MEM_SIGNNM,
+		m.MEM_SEX,
+		m.DEPT_NO
+		FROM MEMBER m
+		WHERE
+		m.MEM_EMAIL = #{mem_email} AND m.MEM_DELFLAG = 'N'
+	</select>
+
+	<!--회원 수정 -->
+	<update id="modyMemberUser" parameterType="memDto">
+		UPDATE MEMBER
+		SET
+		MEM_NAME = #{mem_name},MEM_SEX= #{mem_sex},MEM_TEL =#{mem_tel},
+		MEM_SIGNNM=#{mem_signnm},MEM_BIRTH =#{mem_birth} ,MEM_PHOTONM
+		=#{mem_photonm},DEPT_NO =#{dept_no}
+		WHERE MEM_EMAIL =#{mem_email}
+	</update>
+
+	<!--user 삭제(변경) x -->
+	<update id="delflagMemberUser" parameterType="java.lang.String">
+		UPDATE
+		MEMBER SET
+		MEM_DELFLAG = 'Y'
+		WHERE MEM_EMAIL= #{mem_email}
+	</update>
+
+
+
+	<!--바로 밑이랑 하나 -->
+	<!--팀 생성 -->
+	<insert id="insertDepart" parameterType="deparDto">
+		INSERT INTO DEPARTMENT
+		(DEPT_NO, DEPT_NAME, DEPT_TOP)
+		VALUES
+		(#{dept_no},#{dept_name},#{dept_top})
+	</insert>
+
+	<!--파티원 부여 -->
+	<update id="updateDepartUsers" parameterType="memDto">
+		UPDATE MEMBER SET
+		DEPT_NO = #{dept_no}, AUTH_NO = 5
+		where MEM_EMAIL = #{mem_email}
+	</update>
+
+
+	<!--class 상세 조회 -->
+	<select id="selectOneDepart" resultType="deparDto"
+		parameterType="deparDto">
+		SELECT DISTINCT(d.DEPT_NO) DEPT_NO, d.DEPT_NAME
+		DEPT_NAME,
+		NVL((SELECT m.MEM_NAME FROM MEMBER m WHERE m.DEPT_NO =
+		#{dept_no} and
+		m.AUTH_NO=#{auth_no}),'없습니다') AS MEM_NAME
+		,d.DEPT_TOP
+		FROM DEPARTMENT
+		d, MEMBER m
+		WHERE d.DEPT_NO=m.DEPT_NO
+		AND m.DEPT_NO =
+		#{dept_no}
+	</select>
+
+	<insert id="insertClassZero" parameterType="java.lang.String">
+		INSERT INTO MEMBER
+		(MEM_NO, MEM_EMAIL, DEPT_NO, AUTH_NO, MEM_NAME, MEM_TEL, MEM_SEX,
+		MEM_BIRTH, MEM_PHOTONM, MEM_SIGNNM, MEM_DELFLAG,MEM_RAGDATE)
+		VALUES
+		(MEMBER_MEM_NO_SEQ.nextval, '@gmail.com', #{dept_no}, 3, '없음',
+		'000-0000-0000', 'M', '00-01-01',
+		'mem_photonm', 'mem_signnm',
+		'Y',sysdate)
+	</insert>
+
+	<!-- 난 두개를 선택함 team상세 정보를 출력 , team장을 출력해주는 코드 -->
+	<select id="selectOneTeamDetail" parameterType="java.lang.String"
+		resultType="deparDto">
+		SELECT dept_no,d.DEPT_NAME,dept_top FROM DEPARTMENT d
+		WHERE
+		d.DEPT_DELFLAG='N'
+		AND d.DEPT_NO = #{dept_no}
+	</select>
+	<select id="selectOneMaster" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT MEM_NAME FROM MEMBER m
+		WHERE m.DEPT_NO =#{dept_no}
+		And m.AUTH_NO = '4'
+	</select>
+
+	<select id="selectOneMaster2" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT MEM_NAME FROM MEMBER m
+		WHERE m.DEPT_NO =#{dept_no}
+		And m.AUTH_NO = '2'
+	</select>
+
+
+
+	<!-- 팀의 속한 회원 조회 -->
+	<select id="selectListTeamowe" parameterType="java.util.Map"
+		resultType="memDto">
+		SELECT m.MEM_NAME, m.MEM_NO
+		FROM MEMBER m
+		WHERE m.AUTH_NO
+		BETWEEN ${auth_no} and ${auth_no2}
+		AND m.DEPT_NO =#{dept_no}
+	</select>
+
+	<!-- 팀/클래스 삭제 삭제 -->
+	<update id="delflagDepartTeam" parameterType="java.lang.String">
+		UPDATE DEPARTMENT
+		SET DEPT_DELFLAG = 'Y' WHERE DEPT_NO =#{dept_no}
+	</update>
+
+	<!--가져다 쓴 list 수정이 필요하다 -->
+	<select id="selectListMember" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT *
+		FROM MEMBER m
+		,DEPARTMENT d
+		WHERE m.DEPT_NO =
+		d.DEPT_NO
+		AND d.DEPT_NO =
+		#{dept_no}
+		AND m.MEM_DELFLAG = 'N'
+		AND
+		m.AUTH_NO= 3
+	</select>
+	<select id="selectListMemberClass" parameterType="java.lang.String"
+		resultType="memDto">
+		select
+		m.mem_name, d.dept_no, d.dept_top,m.mem_no
+		from MEMBER
+		m,DEPARTMENT d
+		where
+		m.dept_no=d.dept_no
+		and m.dept_no=#{dept_no} AND
+		d.DEPT_DELFLAG = 'N'
+		AND m.AUTH_NO !=2
+		union
+		select m.mem_name,
+		d.dept_no, d.dept_top,m.mem_no
+		from
+		MEMBER m, DEPARTMENT d
+		where
+		m.dept_no=d.dept_no
+		and
+		d.dept_top=#{dept_no} AND d.DEPT_DELFLAG =
+		'N'
+		AND m.AUTH_NO !=2
+	</select>
+
+	<select id="selectListMemberDelClass" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT *
+		FROM MEMBER m, DEPARTMENT d
+		WHERE m.DEPT_NO =
+		d.DEPT_NO
+		AND d.DEPT_NO = 'C0000'
+		AND m.MEM_DELFLAG = 'N'
+		AND m.AUTH_NO
+		BETWEEN 0 AND 5
+	</select>
+
+
+	<!--팀원으로 업데이트 -->
+	<!--03-10 -->
+	<update id="updateUserDepart" parameterType="memDto">
+		UPDATE MEMBER SET
+		AUTH_NO= 5 , DEPT_NO = #{dept_no}
+		WHERE MEM_NO=#{mem_no}
+	</update>
+	<!-- 팀원들만 출력시킨다 -->
+	<select id="selectListDeldepart" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT *
+		FROM
+		MEMBER m
+		WHERE m.DEPT_NO = #{dept_no}
+		AND
+		m.AUTh_no = 5
+	</select>
+
+	<!--팀원 지우기 -->
+	<update id="updateDepartUserDel" parameterType="memDto">
+		UPDATE MEMBER
+		SET
+		AUTH_NO = 3, DEPT_NO = #{dept_no}
+		WHERE MEM_NO = #{mem_no}
+	</update>
+	<select id="selectListClassDel" resultType="memDto">
+		SELECT DISTINCT
+		d.DEPT_NAME ,d.DEPT_NO
+		from DEPARTMENT d
+		where d.DEPT_DELFLAG
+		= 'N'
+		AND
+		d.DEPT_NO like 'C%'
+	</select>
+
+	<update id="updateTeamUserReader" parameterType="memDto">
+		UPDATE MEMBER
+		SET
+		AUTH_NO = #{auth_no}
+		WHERE MEM_EMAIL = #{mem_email}
+	</update>
+
+	<!-- 수정시키기위해 값을 불러온다 -->
+	<select id="selectOnedepartUP" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT d.DEPT_NO,
+		m.MEM_NAME,
+		m.MEM_EMAIL,
+		d.DEPT_NAME,
+		m.AUTH_NO,
+		d.dept_top
+		FROM DEPARTMENT d, MEMBER m
+		WHERE d.DEPT_NO =
+		m.DEPT_NO
+		AND
+		d.DEPT_NO = #{dept_no}
+		AND m.AUTH_NO = 4
+	</select>
+	<!-- 클래스 수정 쿼리 -->
+	<update id="updateClassName" parameterType="deparDto">
+		UPDATE DEPARTMENT
+		SET
+		DEPT_NAME = #{dept_name}
+		WHERE DEPT_NO =#{dept_no}
+	</update>
+
+	<!--마스터로 바꿀 사람들을 보여준다 -->
+	<select id="selectListClassMaster" parameterType='java.lang.String'
+		resultType="memDto">
+		select
+		m.MEM_NO,m.mem_name,
+		d.dept_no,d.dept_name,m.mem_email
+		from
+		MEMBER
+		m,
+		DEPARTMENT d
+		where
+		m.dept_no=d.dept_no
+		and m.dept_no=#{dept_no}
+	</select>
+
+	<select id="selectUserCountDepart" parameterType="memDto"
+		resultType="java.lang.Integer">
+		SELECT NVL (COUNT(*),0)
+		FROM MEMBER m
+		WHERE DEPT_NO
+		=#{dept_no}
+		AND m.AUTH_NO=#{auth_no}
+	</select>
+	<update id="updateDelfalag" parameterType="java.lang.String">
+		update DEPARTMENT SET
+		DEPT_DELFLAG='Y' WHERE DEPT_NO=#{dept_no}
+	</update>
+
+</mapper>

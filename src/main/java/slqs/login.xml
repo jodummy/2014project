@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ya.rain.bow.login">
+
+	<!--google email과 값을 비교한후 옳은 값이면 값을 반환해준다 -->
+	<!--권한을 검색해서 관리자인지 회원인지 확인한다 -->
+	<select id="SelectOneMemberLogin" parameterType="java.lang.String"
+		resultType="loginDto">
+		SELECT MEM_NO, MEM_EMAIL,AUTH_NO
+		FROM MEMBER
+		WHERE
+		MEMBER.MEM_EMAIL =
+		#{email} AND MEMBER.MEM_DELFLAG = 'N'
+	</select>
+	<!--세션유지 -->
+	<select id="SelectOneMemberSession" parameterType="java.lang.String"
+		resultType="memDto">
+		SELECT 
+		M.MEM_NO,
+		M.MEM_EMAIL, 
+		M.DEPT_NO,
+		D.DEPT_NAME,
+		M.AUTH_NO, 
+		M.MEM_NAME, 
+		M.MEM_SIGNNM,
+		M.MEM_DELFLAG,
+		D.DEPT_NO, 
+		D.DEPT_NAME, 
+		D.DEPT_TOP,  
+		D.DEPT_DELFLAG
+		FROM MEMBER M,
+		DEPARTMENT D
+		WHERE M.DEPT_NO=D.DEPT_NO
+		AND M.MEM_DELFLAG='N'
+		AND
+		M.MEM_EMAIL=#{email}
+	</select>
+</mapper>

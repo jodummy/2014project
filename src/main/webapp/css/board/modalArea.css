@@ -1,0 +1,15 @@
+.boardAreaTitleModal {
+	text-align: center;
+	font-weight: bold;
+	width: 80px;
+}
+.contentArea {
+	height: 205px;
+}
+input[type="text"] {
+	border: 0px;
+	width: 100%;
+}
+table {
+	width: 100%;
+}

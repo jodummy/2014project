@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ya.rain.bow.approval">
+
+	<select id="selectMaxDocNo" resultType="docDto">
+		SELECT NVL(MAX(DOC_MNGNO),0)
+		doc_mngno FROM DOCUMENT
+	</select>
+
+	<select id="selectListDocument" parameterType="pagingDto"
+		resultType="docDto">
+		SELECT * FROM (SELECT ROWNUM RNUM, P.*
+		FROM ( SELECT D.DOC_MNGNO, D.TEMP_NO, D.MEM_NO, D.DOC_TITLE, D.DOC_CONTENT,
+				D.DOC_DEPTNM, D.DOC_WRITER, D.DOC_REGDATE, 
+				D.DOC_NO, D.DOC_STATUS, D.DOC_LASTDATE
+				FROM DOCUMENT D, APPROVALLINE A
+				WHERE D.DOC_MNGNO = A.DOC_MNGNO
+				AND A.MEM_NO = #{mem_no}
+				ORDER BY D.DOC_MNGNO DESC) P)
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>
+
+	<select id="selectListMember" parameterType="java.lang.Integer"
+		resultType="memDto">
+		SELECT M.MEM_NO, M.MEM_EMAIL, D.DEPT_NAME, M.AUTH_NO,
+		M.MEM_NAME, M.MEM_SIGNNM,
+		M.MEM_DELFLAG
+		FROM MEMBER M, DEPARTMENT D
+		WHERE M.DEPT_NO=D.DEPT_NO
+		AND M.MEM_DELFLAG='N'
+		AND M.MEM_NO!=#{mem_no}
+		ORDER BY M.MEM_NO, M.AUTH_NO
+	</select>
+
+	<insert id="insertDocumentImsi" parameterType="docDto">
+		INSERT INTO
+		DOCUMENT (DOC_MNGNO,TEMP_NO, MEM_NO, DOC_DEPTNM, DOC_WRITER,
+		DOC_TITLE, DOC_CONTENT, DOC_REGDATE, DOC_STATUS, DOC_LASTDATE)
+		VALUES
+		(#{doc_mngno}, #{temp_no}, #{mem_no}, #{doc_deptnm},
+		#{doc_writer}, #{doc_title}, #{doc_content}, SYSDATE, '0',
+		#{doc_lastdate})
+	</insert>
+
+	<insert id="insertDocumentApp" parameterType="docDto">
+		INSERT INTO
+		DOCUMENT (DOC_MNGNO,TEMP_NO, MEM_NO, DOC_DEPTNM, DOC_WRITER,
+		DOC_TITLE, DOC_CONTENT, DOC_REGDATE, DOC_STATUS, DOC_LASTDATE,
+		DOC_REPERENCE, DOC_NO)
+		VALUES
+		((SELECT NVL(MAX(DOC_MNGNO),0) FROM DOCUMENT)+1,
+		#{temp_no}, #{mem_no}, #{doc_deptnm}, #{doc_writer}, #{doc_title},
+		#{doc_content}, SYSDATE,'2',#{doc_lastdate}, #{doc_reperence},
+		#{doc_no})
+	</insert>
+
+	<insert id="insertApprovalLine" parameterType="appDto">
+		INSERT INTO
+		APPROVALLINE (DOC_MNGNO, MEM_NO, APP_ORDER, APP_STATUS)
+		VALUES (#{doc_mngno}, #{mem_no}, #{app_order}, #{app_status})
+	</insert>
+
+	<select id="selectListDocImsi" parameterType="pagingDto"
+		resultType="docDto">
+		SELECT *
+		FROM (SELECT ROWNUM RNUM, P.*
+		FROM (SELECT
+		DOC_MNGNO, MEM_NO, DOC_TITLE, DOC_REGDATE
+		FROM
+		DOCUMENT D
+		WHERE
+		D.MEM_NO=#{mem_no}
+		AND DOC_STATUS=0
+		ORDER BY DOC_MNGNO
+		DESC) P )
+		WHERE
+		RNUM BETWEEN #{start} AND #{last}
+	</select>
+
+	<select id="selectListDocMine" parameterType="pagingDto"
+		resultType="docDto">
+		SELECT *
+		FROM (SELECT ROWNUM RNUM, P.*
+			  FROM (SELECT DOC_MNGNO, DOC_NO, DOC_TITLE, DOC_WRITER,
+					DOC_DEPTNM,	DOC_STATUS,	DOC_REGDATE
+					FROM DOCUMENT
+					WHERE MEM_NO=#{mem_no}
+					AND DOC_STATUS=#{doc_status}
+					ORDER BY DOC_MNGNO DESC) P )
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>
+
+	<select id="selectListDoc" parameterType="pagingDto" resultType="docDto">
+		SELECT *
+		FROM (SELECT ROWNUM RNUM, P.*
+			  FROM (SELECT D.DOC_MNGNO,
+					D.DOC_NO, D.DOC_TITLE, D.DOC_WRITER, D.DOC_DEPTNM,
+					D.DOC_STATUS, D.DOC_REGDATE 
+					FROM DOCUMENT D, APPROVALLINE A
+					WHERE A.DOC_MNGNO=D.DOC_MNGNO
+					AND D.MEM_NO!=#{mem_no}
+					AND (A.MEM_NO=#{mem_no}
+					AND a.app_status=#{app_status})
+					AND D.DOC_STATUS=#{doc_status}
+					AND D.DOC_STATUS!=4
+					ORDER BY D.DOC_MNGNO DESC) P )
+		WHERE RNUM BETWEEN #{start} AND #{last}
+	</select>
+
+	<select id="selectListDocBan" parameterType="docDto" resultType="docDto">
+		SELECT *
+		FROM (SELECT ROWNUM RNUM, P.*
+		FROM (
+		SELECT D.DOC_MNGNO,
+		D.DOC_NO, D.DOC_TITLE, D.DOC_WRITER, D.DOC_DEPTNM,
+		D.DOC_STATUS,
+		D.DOC_REGDATE
+		FROM DOCUMENT D, APPROVALLINE A
+		WHERE
+		A.DOC_MNGNO=D.DOC_MNGNO
+		AND D.MEM_NO!=#{mem_no}
+		AND A.MEM_NO=#{mem_no}
+		AND D.DOC_STATUS=#{doc_status}
+		ORDER BY
+		D.DOC_MNGNO DESC) P )
+		WHERE RNUM
+		BETWEEN #{start} AND #{last}
+	</select>
+
+	<select id="selectOneDocImsi" parameterType="java.lang.String"
+		resultType="docDto">
+		SELECT D.DOC_MNGNO, D.TEMP_NO, D.DOC_NO, D.DOC_DEPTNM,
+		D.DOC_WRITER, D.MEM_NO,
+		D.DOC_REGDATE, D.DOC_LASTDATE, D.DOC_REPERENCE,
+		D.DOC_TITLE,
+		D.DOC_CONTENT
+		FROM DOCUMENT D
+		WHERE D.DOC_MNGNO=#{doc_mngno}
+		ORDER BY
+		DOC_MNGNO DESC
+	</select>
+
+	<select id="selectListDetailDoc" parameterType="java.lang.String"
+		resultType="docDto">
+		SELECT D.DOC_MNGNO, D.DOC_NO, D.TEMP_NO, D.DOC_DEPTNM,
+		D.DOC_WRITER,
+		D.DOC_REGDATE, D.DOC_LASTDATE, D.DOC_REPERENCE,
+		D.DOC_TITLE,
+		D.DOC_CONTENT, A.MEM_NO, A.APP_ORDER, A.APP_STATUS
+		FROM
+		DOCUMENT D, APPROVALLINE A
+		WHERE D.DOC_MNGNO = A.DOC_MNGNO
+		AND
+		D.DOC_MNGNO=#{doc_mngno}
+		ORDER BY D.DOC_MNGNO DESC, A.APP_ORDER DESC
+	</select>
+
+	<update id="updateDocAppBan" parameterType="java.lang.String">
+		UPDATE DOCUMENT
+		SET
+		DOC_STATUS = 4
+		WHERE DOC_MNGNO = #{doc_mngno}
+	</update>
+
+	<update id="updateApprovalLine" parameterType="appDto">
+		UPDATE
+		APPROVALLINE
+		SET
+		APP_STATUS = 2
+		WHERE DOC_MNGNO = #{doc_mngno}
+		AND
+		MEM_NO=#{mem_no}
+	</update>
+
+	<update id="updateDocAppLineFinal" parameterType="docDto">
+		UPDATE DOCUMENT
+		SET DOC_STATUS=#{doc_status} WHERE DOC_MNGNO=#{doc_mngno}
+	</update>
+
+	<delete id="deleteDocImsiAgain" parameterType="java.lang.String">
+		DELETE FROM
+		DOCUMENT
+		WHERE DOC_MNGNO=#{doc_mngno}
+		AND DOC_STATUS=0
+	</delete>
+
+	<select id="selectOneDocNo" resultType="java.lang.String">
+		SELECT DOC_NO
+		FROM (SELECT
+		DOC_MNGNO, DOC_NO FROM DOCUMENT D WHERE D.DOC_STATUS!=0 ORDER
+		BY
+		DOC_REGDATE DESC) D
+		WHERE ROWNUM = 1
+	</select>
+
+	<update id="updateDocumentImsi" parameterType="docDto">
+		UPDATE DOCUMENT
+		SET DOC_TITLE=#{doc_title},
+		DOC_CONTENT=#{doc_content},
+		DOC_LASTDATE=#{doc_lastdate}, DOC_REPERENCE=#{doc_reperence}
+		WHERE
+		DOC_MNGNO=#{doc_mngno}
+	</update>
+
+	<select id="selectTotalAppPaging" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM (SELECT *
+		FROM DOCUMENT D,
+		APPROVALLINE A
+		WHERE D.DOC_MNGNO=A.DOC_MNGNO
+		AND A.MEM_NO=#{mem_no}
+		ORDER BY D.DOC_MNGNO DESC)
+	</select>
+
+	<select id="selectTotalImsiPaging" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM (SELECT DOC_MNGNO, MEM_NO,
+		DOC_TITLE, DOC_REGDATE
+		FROM DOCUMENT D
+		WHERE D.MEM_NO=#{mem_no}
+		AND
+		DOC_STATUS=0
+		ORDER BY DOC_MNGNO
+		DESC)
+	</select>
+
+	<select id="selectTotalMinePaging" parameterType="pagingDto"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM (SELECT DOC_MNGNO, DOC_NO,
+		DOC_TITLE,
+		DOC_WRITER,
+		DOC_DEPTNM,
+		DOC_STATUS, DOC_REGDATE
+		FROM DOCUMENT
+		WHERE
+		MEM_NO=#{mem_no}
+		AND DOC_STATUS=#{doc_status}
+		ORDER BY DOC_MNGNO
+		DESC)
+	</select>
+
+	<select id="selectTotalOtherPaging" parameterType="pagingDto"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM (SELECT D.DOC_MNGNO, D.DOC_NO,
+		D.DOC_TITLE,
+		D.DOC_WRITER, D.DOC_DEPTNM,
+		D.DOC_STATUS, D.DOC_REGDATE
+		FROM DOCUMENT D,
+		APPROVALLINE A
+		WHERE
+		A.DOC_MNGNO=D.DOC_MNGNO
+		AND
+		D.MEM_NO!=#{mem_no}
+		AND
+		(A.MEM_NO=#{mem_no}
+		AND
+		a.app_status=#{app_status})
+		AND
+		D.DOC_STATUS=#{doc_status}
+		AND
+		D.DOC_STATUS!=4
+		ORDER BY D.DOC_MNGNO
+		DESC)
+	</select>
+
+	<select id="selectTotalDocBanPaging" parameterType="pagingDto"
+		resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0)
+		FROM (SELECT D.DOC_MNGNO, D.DOC_NO,
+		D.DOC_TITLE,
+		D.DOC_WRITER, D.DOC_DEPTNM,
+		D.DOC_STATUS,
+		D.DOC_REGDATE
+		FROM
+		DOCUMENT D,
+		APPROVALLINE A
+		WHERE A.DOC_MNGNO=D.DOC_MNGNO
+		AND
+		D.MEM_NO!=#{mem_no}
+		AND
+		A.MEM_NO=#{mem_no}
+		AND D.DOC_STATUS=#{doc_status}
+		ORDER BY
+		D.DOC_MNGNO
+		DESC)
+	</select>
+
+	<insert id="insertAppReply" parameterType="appDto">
+		INSERT INTO
+		APPROVALREPLY (AR_NO, DOC_MNGNO, AR_CONTENT, AR_WRITER,
+		AR_REGDATE,
+		AR_DELFLAG)
+		VALUES(#{ar_no}, #{doc_mngno}, #{ar_content}, #{ar_writer},
+		SYSDATE,'N')
+	</insert>
+
+	<select id="selectAppArNoMax" resultType="java.lang.Integer">
+		SELECT MAX(AR_NO) FROM
+		APPROVALREPLY
+	</select>
+
+	<select id="selectListDocReply" parameterType="java.lang.String"
+		resultType="appDto">
+		SELECT AR_NO, DOC_MNGNO, AR_CONTENT, AR_WRITER, AR_REGDATE
+		FROM
+		APPROVALREPLY A
+		WHERE DOC_MNGNO=#{doc_mngno}
+		AND A.AR_DELFLAG='N'
+		ORDER BY AR_NO
+	</select>
+
+	<delete id="deleteAppReply" parameterType="appDto">
+		DELETE FROM
+		APPROVALREPLY WHERE AR_NO=#{ar_no} AND DOC_MNGNO=#{doc_mngno}
+	</delete>
+
+	<select id="selectListDocMainImsi" parameterType="java.lang.Integer"
+		resultType="docDto">
+		SELECT
+		DOC_MNGNO, MEM_NO, DOC_TITLE, DOC_REGDATE
+		FROM
+		DOCUMENT D
+		WHERE
+		D.MEM_NO=#{mem_no}
+		AND DOC_STATUS=0
+		ORDER BY DOC_MNGNO
+		DESC
+	</select>
+
+	<select id="selectListMainWait" parameterType="docDto"
+		resultType="docDto">
+		SELECT D.DOC_MNGNO,
+		D.DOC_NO, D.DOC_TITLE, D.DOC_WRITER,
+		D.DOC_DEPTNM,
+		D.DOC_STATUS,
+		D.DOC_REGDATE
+		FROM DOCUMENT D, APPROVALLINE A
+		WHERE
+		A.DOC_MNGNO=D.DOC_MNGNO
+		AND D.MEM_NO!=#{mem_no}
+		AND
+		(A.MEM_NO=#{mem_no}
+		AND a.app_status=#{app_status})
+		AND
+		D.DOC_STATUS=#{doc_status}
+		AND
+		D.DOC_STATUS!=4
+		ORDER BY D.DOC_MNGNO
+		DESC
+	</select>
+
+	<select id="selectListMainTotal" parameterType="java.lang.Integer"
+		resultType="docDto">
+		SELECT D.DOC_MNGNO,
+		D.TEMP_NO, D.MEM_NO, D.DOC_TITLE,
+		D.DOC_CONTENT, D.DOC_DEPTNM,
+		D.DOC_WRITER, D.DOC_REGDATE, D.DOC_NO,
+		D.DOC_STATUS, D.DOC_LASTDATE
+		FROM DOCUMENT D, APPROVALLINE A
+		WHERE
+		D.DOC_MNGNO = A.DOC_MNGNO
+		AND A.MEM_NO = #{mem_no}
+		ORDER BY D.DOC_MNGNO
+		DESC
+	</select>
+
+	<select id="selectListMainIng" parameterType="docDto" resultType="docDto">
+		SELECT
+		DOC_MNGNO, DOC_NO, DOC_TITLE, DOC_WRITER,
+		DOC_DEPTNM,
+		DOC_STATUS,
+		DOC_REGDATE
+		FROM DOCUMENT
+		WHERE MEM_NO=#{mem_no}
+		AND	DOC_STATUS=#{doc_status}
+		ORDER BY DOC_MNGNO DESC
+	</select>
+
+	<select id="selectTemplate" parameterType="java.lang.Integer" resultType="tempDto">
+		SELECT TEMP_NO, TEMP_NAME, TEMP_CONTENT, CODE
+		FROM TEMPLATE
+		WHERE TEMP_NO=#{temp_no}
+	</select>
+</mapper>

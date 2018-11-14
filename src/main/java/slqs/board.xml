@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ya.rain.bow.board">
+	
+	<!-- 게시판 공지글 조회 -->
+	<select id="selectBoardNotice" parameterType="pagingDto" resultType="boardDto">
+		SELECT B.BOARD_NO, D.DEPT_NAME, M.MEM_NO, M.MEM_NAME, B.BOARD_TITLE,
+			   B.BOARD_READCNT, B.BOARD_REGDATE, B.BOARD_CONTENT, B.BOARD_DELFLAG,
+			   (SELECT NVL(COUNT(*),0)
+				FROM BOARDREPLY
+				WHERE BOARD_NO= B.BOARD_NO
+				AND BR_DELFLAG = 'N') BOARD_REPLYCNT
+		FROM BOARD B JOIN DEPARTMENT D
+		ON B.DEPT_NO = D.DEPT_NO
+		JOIN MEMBER M
+		ON B.MEM_NO = M.MEM_NO
+		WHERE CTGR_NO= #{ctgr_no}
+		<choose>
+			<when test="dept_no != null">
+				AND B.DEPT_NO= #{dept_no}
+			</when>
+		</choose>
+		AND BOARD_NOTICE = 'Y'
+		AND BOARD_DELFLAG = 'N'
+		ORDER BY B.BOARD_NO DESC
+	</select>
+	
+	<!-- 공지글 카운트 -->
+	<select id="selectBoardNoticeCount" parameterType="pagingDto" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*),0)
+		FROM BOARD
+		WHERE CTGR_NO= #{ctgr_no}
+		<choose>
+			<when test="dept_no != null">
+				AND DEPT_NO= #{dept_no}
+			</when>
+		</choose>
+		AND BOARD_NOTICE = 'Y'
+		AND BOARD_DELFLAG = 'N'
+	</select>
+	
+	<!-- 게시판 글 조회 -->
+	<select id="selectBoard" parameterType="pagingDto" resultType="boardDto">
+		SELECT PR.*
+		FROM (SELECT ROWNUM PRNUM, R.*, (SELECT NVL(COUNT(*),0)
+							 FROM BOARDREPLY
+							 WHERE BOARD_NO= R.BOARD_NO
+							 AND BR_DELFLAG = 'N') BOARD_REPLYCNT
+				FROM (SELECT ROWNUM RNUM, P.*
+					  FROM (SELECT B.BOARD_NO, D.DEPT_NAME, M.MEM_NO, M.MEM_NAME, B.BOARD_NOTICE, B.BOARD_TITLE,
+								   B.BOARD_READCNT, B.BOARD_REGDATE, B.BOARD_CONTENT, B.BOARD_DELFLAG 
+							FROM BOARD B JOIN DEPARTMENT D
+							ON B.DEPT_NO = D.DEPT_NO
+							JOIN MEMBER M
+							ON B.MEM_NO = M.MEM_NO
+							WHERE CTGR_NO= #{ctgr_no}
+							<choose>
+								<when test="dept_no != null">
+									AND B.DEPT_NO= #{dept_no}
+								</when>
+							</choose>
+							ORDER BY B.BOARD_NO) P
+							ORDER BY BOARD_NO DESC) R
+							WHERE R.BOARD_NOTICE = 'N'
+							AND R.BOARD_DELFLAG = 'N') PR
+		WHERE PRNUM BETWEEN #{start} AND #{last}
+	</select>
+	
+	<!-- 전체 글 수(페이징을 사용하기 위함) -->
+	<select id="seletcBoardCount" parameterType="pagingDto" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*),0)
+		FROM BOARD
+		WHERE CTGR_NO= #{ctgr_no}
+		<choose>
+			<when test="dept_no != null">
+				AND DEPT_NO= #{dept_no}
+			</when>
+		</choose>
+		AND BOARD_NOTICE = 'N'
+		AND BOARD_DELFLAG = 'N'
+	</select>
+	
+	<!-- 검색 글 수(페이징을 사용하기 위함) -->
+	<select id="selectBoardSearchCount" parameterType="searchDto" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*),0)
+		FROM (SELECT ROWNUM RNUM, P.*
+			  FROM (SELECT B.BOARD_NO, B.DEPT_NO, D.DEPT_NAME, B.MEM_NO, M.MEM_NAME, B.BOARD_NOTICE, B.BOARD_TITLE,
+						   B.BOARD_READCNT, B.BOARD_REGDATE, B.BOARD_CONTENT, B.BOARD_DELFLAG 
+					FROM BOARD B JOIN DEPARTMENT D
+					ON B.DEPT_NO = D.DEPT_NO
+					JOIN MEMBER M
+					ON B.MEM_NO = M.MEM_NO
+					WHERE CTGR_NO= #{intNum}
+					<choose>
+						<when test="strNum != null">
+							AND B.DEPT_NO= #{strNum}
+						</when>
+					</choose>
+					ORDER BY B.BOARD_NO) P
+					ORDER BY BOARD_NO DESC) R
+					WHERE R.BOARD_DELFLAG = 'N'
+					AND
+					<choose>
+						<when test="name != null">
+							<foreach collection="name" item="mem_name" separator="OR">
+							  R.MEM_NAME LIKE '%' || #{mem_name} || '%'
+							</foreach>
+							or
+							<foreach collection="name" item="dept_name" separator="OR">
+							  R.DEPT_NAME LIKE '%' || #{dept_name} || '%'
+							</foreach>
+						</when>
+						<when test="title != null">
+							<foreach collection="title" item="board_title" separator="OR">
+							  R.BOARD_TITLE LIKE '%' || #{board_title} || '%'
+							</foreach>
+						</when>
+						<when test="content != null">
+							<foreach collection="content" item="board_content" separator="OR">
+							  R.BOARD_CONTENT LIKE '%' ||#{board_content} || '%'
+							</foreach>
+						</when>
+						<otherwise>
+							<foreach collection="search" item="board_title" separator="OR">
+							  R.BOARD_TITLE LIKE '%' || #{board_title} || '%'
+						   </foreach>
+							OR
+						   <foreach collection="search" item="board_content" separator="OR">
+							  R.BOARD_CONTENT LIKE '%' || #{board_content} || '%'
+						   </foreach>
+						</otherwise>
+					</choose>
+	</select>
+	
+	<!-- 상세 글조회 -->
+	<select id="selectOneBoard" parameterType="java.lang.Integer" resultType="boardDto">
+		SELECT B.BOARD_NO, D.DEPT_NAME, M.MEM_NO, M.MEM_NAME,
+		       B.BOARD_NOTICE, B.BOARD_TITLE,
+			   B.BOARD_READCNT, B.BOARD_REGDATE, B.BOARD_CONTENT,
+			   (SELECT NVL(COUNT(*),0)
+				FROM BOARDREPLY
+				WHERE BOARD_NO= B.BOARD_NO
+				AND BR_DELFLAG = 'N') BOARD_REPLYCNT
+		FROM BOARD B JOIN DEPARTMENT D
+		ON B.DEPT_NO = D.DEPT_NO
+		JOIN MEMBER M
+		ON B.MEM_NO = M.MEM_NO
+		WHERE B.BOARD_NO=#{board_no}
+	</select>
+	
+	<!-- 검색 -->
+	<select id="selectBoardSearch" parameterType="searchDto" resultType="boardDto">
+		SELECT PR.*
+		FROM (SELECT ROWNUM PRNUM, R.*, (SELECT NVL(COUNT(*),0)
+							 FROM BOARDREPLY
+							 WHERE BOARD_NO= R.BOARD_NO
+							 AND BR_DELFLAG = 'N') BOARD_REPLYCNT
+				FROM (SELECT ROWNUM RNUM, P.*
+					  FROM (SELECT B.BOARD_NO, B.DEPT_NO, D.DEPT_NAME, B.MEM_NO, M.MEM_NAME, B.BOARD_NOTICE, B.BOARD_TITLE,
+								   B.BOARD_READCNT, B.BOARD_REGDATE, B.BOARD_CONTENT, B.BOARD_DELFLAG 
+							FROM BOARD B JOIN DEPARTMENT D
+							ON B.DEPT_NO = D.DEPT_NO
+							JOIN MEMBER M
+							ON B.MEM_NO = M.MEM_NO
+							WHERE CTGR_NO= #{intNum}
+							<choose>
+								<when test="strNum != null">
+									AND B.DEPT_NO= #{strNum}
+								</when>
+							</choose>
+							ORDER BY B.BOARD_NO) P
+							ORDER BY BOARD_NO DESC) R
+							WHERE R.BOARD_DELFLAG = 'N'
+							AND
+							<choose>
+								<when test="name != null">
+									<foreach collection="name" item="mem_name" separator="OR">
+									  R.MEM_NAME LIKE '%' || #{mem_name} || '%'
+									</foreach>
+									or
+									<foreach collection="name" item="dept_name" separator="OR">
+									  R.DEPT_NAME LIKE '%' || #{dept_name} || '%'
+									</foreach>
+								</when>
+								<when test="title != null">
+									<foreach collection="title" item="board_title" separator="OR">
+									  R.BOARD_TITLE LIKE '%' || #{board_title} || '%'
+									</foreach>
+								</when>
+								<when test="content != null">
+									<foreach collection="content" item="board_content" separator="OR">
+									  R.BOARD_CONTENT LIKE '%' || #{board_content} || '%'
+									</foreach>
+								</when>
+								<otherwise>
+									<foreach collection="search" item="board_title" separator="OR">
+									  R.BOARD_TITLE LIKE '%' || #{board_title} || '%'
+								   </foreach>
+									OR
+								   <foreach collection="search" item="board_content" separator="OR">
+									  R.BOARD_CONTENT LIKE '%' || #{board_content} || '%'
+								   </foreach>
+								</otherwise>
+							</choose>) PR
+		WHERE PRNUM BETWEEN #{start} AND #{last}
+	</select>
+	
+	<!-- 댓글조회 -->
+	<select id="selectBoardReply" parameterType="java.lang.Integer" resultType="brDto">
+		SELECT BR.BR_NO, BR.BOARD_NO, D.DEPT_NAME, M.MEM_NO, M.MEM_NAME, BR.BR_CONTENT, BR.BR_REFER, BR.BR_STEP, BR.BR_DEPTH, BR.BR_REGDATE, BR.BR_DELFLAG
+		FROM BOARDREPLY BR JOIN DEPARTMENT D
+		ON BR.DEPT_NO = D.DEPT_NO
+		JOIN MEMBER M
+		ON BR.MEM_NO = M.MEM_NO
+		WHERE BOARD_NO = #{board_no}
+		ORDER BY BR_REFER DESC, BR_STEP
+	</select>
+	
+	<!-- 파일 조회 -->
+	<select id="selectBoardFile" parameterType="java.lang.Integer" resultType="bfDto">
+		SELECT BF_NO, BOARD_NO, BF_OLDNM, BF_SAVENM, BF_REGDATE
+		FROM BOARDFILE
+		WHERE BOARD_NO = #{board_no}
+		ORDER BY BF_NO
+	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="updateBoardReadCnt" parameterType="java.lang.Integer">
+		UPDATE BOARD
+		SET BOARD_READCNT = BOARD_READCNT+1
+		WHERE BOARD_NO = #{board_no}
+	</update>
+	
+	<!-- 게시판 글 등록 -->
+	<insert id="insertBoard" parameterType="boardDto">
+		INSERT INTO BOARD
+		VALUE (BOARD_NO, CTGR_NO, MEM_NO, DEPT_NO, BOARD_NOTICE, BOARD_TITLE, BOARD_CONTENT)
+		VALUES (BOARD_BOARD_NO_SEQ.NEXTVAL, #{ctgr_no}, #{mem_no}, #{dept_no}, #{board_notice}, #{board_title}, #{board_content})
+	</insert>
+	
+	<!-- 댓글등록 -->
+	<insert id="insertBoardReply" parameterType="brDto">
+		INSERT INTO BOARDREPLY
+		VALUE (BR_NO, BOARD_NO, MEM_NO, DEPT_NO, BR_CONTENT, BR_REFER, BR_STEP, BR_DEPTH)
+		VALUES (BOARDREPLY_BR_NO_SEQ.NEXTVAL, #{board_no}, #{mem_no}, #{dept_no}, #{br_content},
+		        (SELECT NVL(MAX(BR_REFER),0)
+		         FROM BOARDREPLY
+		         WHERE BOARD_NO=#{board_no})+1, 0, 0)
+	</insert>
+	
+	<!-- 댓글'S 댓글 등록 -->
+	<!-- 1단계 : BR_STEP 1증가 -->
+	<update id="updateBrStep" parameterType="java.lang.Integer">
+		UPDATE BOARDREPLY
+		SET BR_STEP = BR_STEP+1
+		WHERE BR_REFER = (SELECT BR_REFER FROM BOARDREPLY WHERE BR_NO=#{br_no})
+		AND BR_STEP > (SELECT BR_STEP FROM BOARDREPLY WHERE BR_NO=#{br_no})
+	</update>
+	<!-- 2단계 : 등록 -->
+	<insert id="insertBrReply" parameterType="brDto">
+		INSERT INTO BOARDREPLY
+		VALUE (BR_NO, BOARD_NO, MEM_NO, DEPT_NO, BR_CONTENT, BR_REFER, BR_STEP, BR_DEPTH)
+		VALUES (BOARDREPLY_BR_NO_SEQ.NEXTVAL, #{board_no}, #{mem_no}, #{dept_no}, #{br_content},
+		        (SELECT BR_REFER FROM BOARDREPLY WHERE BR_NO=#{br_no}),
+				(SELECT BR_STEP FROM BOARDREPLY WHERE BR_NO=#{br_no})+1,
+				(SELECT BR_DEPTH FROM BOARDREPLY WHERE BR_NO=#{br_no})+1)
+	</insert>
+	
+	<!-- 파일 업로드 -->
+	<insert id="insertBoardFile" parameterType="bfDto">
+		INSERT INTO BOARDFILE
+		VALUE (BF_NO, BOARD_NO, BF_OLDNM, BF_SAVENM)
+		<choose>
+			<when test="board_no != 0">
+				VALUES (BOARDFILE_BF_NO_SEQ.NEXTVAL, #{board_no}, #{bf_oldnm}, #{bf_savenm})
+			</when>
+			<otherwise>
+				VALUES (BOARDFILE_BF_NO_SEQ.NEXTVAL, BOARD_BOARD_NO_SEQ.CURRVAL, #{bf_oldnm}, #{bf_savenm})
+			</otherwise>
+		</choose>
+	</insert>
+	
+	<!-- 글수정 -->
+	<update id="updateBoard" parameterType="boardDto">
+		UPDATE BOARD
+		SET BOARD_NOTICE = #{board_notice},
+		BOARD_TITLE = #{board_title},
+		BOARD_CONTENT = #{board_content},
+		BOARD_REGDATE = SYSDATE
+		WHERE BOARD_NO = #{board_no}
+	</update>
+		
+	<!-- 게시글 삭제(delflag) -->
+	<update id="updateDelBoard" parameterType="java.lang.Integer">
+		UPDATE BOARD
+		SET BOARD_DELFLAG = 'Y'
+		WHERE BOARD_NO = #{BOARD_NO}
+	</update>
+	
+	<!-- 댓글 삭제(delflag) -->
+	<update id="updateDelBoardReply" parameterType="java.lang.Integer">
+		UPDATE BOARDREPLY
+		SET BR_DELFLAG = 'Y'
+		WHERE BR_NO = #{BR_NO}
+	</update>
+	
+	<!-- 파일삭제 -->
+	<delete id="deleteBoardFile" parameterType="java.lang.Integer">
+		DELETE FROM BOARDFILE
+		WHERE BF_NO = #{BF_no}
+	</delete>
+	
+</mapper>

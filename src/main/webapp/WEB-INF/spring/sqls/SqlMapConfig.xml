@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd" >
+
+<configuration>
+
+	<typeAliases>
+
+		<!-- 공통 -->
+		<typeAlias type="ya.rain.bow.dtos.PagingDto" alias="pagingDto" />
+		<typeAlias type="ya.rain.bow.dtos.SearchDto" alias="searchDto" />
+
+		<!-- 게시판 -->
+		<typeAlias type="ya.rain.bow.dtos.BoardDto" alias="boardDto" />
+		<typeAlias type="ya.rain.bow.dtos.BoardReplyDto" alias="brDto" />
+		<typeAlias type="ya.rain.bow.dtos.BoardFileDto" alias="bfDto" />
+
+		<!-- 전자결재 -->
+		<typeAlias type="ya.rain.bow.dtos.DocumentDto" alias="docDto" />
+		<typeAlias type="ya.rain.bow.dtos.ApprovalDto" alias="appDto" />
+		<typeAlias type="ya.rain.bow.dtos.TemplateDto" alias="tempDto" />
+
+		<!-- 관리 -->
+		<typeAlias type="ya.rain.bow.dtos.MemberDto" alias="memDto" />
+		<typeAlias type="ya.rain.bow.dtos.LoginDto" alias="loginDto" />
+		<typeAlias type="ya.rain.bow.dtos.DepartmentDto" alias="deparDto" />
+
+		<!-- 프로젝트 -->
+		<typeAlias type="ya.rain.bow.dtos.ProjectDto" alias="prjDto" />
+		<typeAlias type="ya.rain.bow.dtos.ProjectSchduleDto" alias="prjsDto" />
+		<typeAlias type="ya.rain.bow.dtos.BookingResourceDto" alias="bkrDto" />
+		
+		<typeAlias type="ya.rain.bow.dtos.AnswerboardDto" alias="abDto" />
+		
+	</typeAliases>
+
+
+
+	<mappers>
+		<mapper resource="/slqs/approval.xml" />
+		<mapper resource="/slqs/board.xml" />
+		<mapper resource="/slqs/chatting.xml" />
+		<mapper resource="/slqs/login.xml" />
+		<mapper resource="/slqs/management.xml" />
+		<mapper resource="/slqs/project.xml" />
+		<mapper resource="/slqs/answerboard.xml" />
+	</mappers>
+
+</configuration>
