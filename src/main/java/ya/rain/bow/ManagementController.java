@@ -91,7 +91,7 @@ public class ManagementController {
 		model.addAttribute("paging", pagintDto);
 		return "management/detailDepartClass";
 	}
-
+	//사용자 회원가입
 	@RequestMapping(value = "/insertUser.do", method = { RequestMethod.GET, RequestMethod.POST })
 	public String insertUser(Model model, PagingDto pagintDto) {
 		List<MemberDto> Dlist = managementService.selectListClassDel();
@@ -99,7 +99,7 @@ public class ManagementController {
 		return "management/insertUser";
 	}
 
-	// 03-16
+	// 사용자 회원가입 처리 페이지
 	@RequestMapping(value = "/insertUserPage.do", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Boolean> insertUserPage(Model model, MemberDto memDto, HttpServletRequest req) {
@@ -131,7 +131,7 @@ public class ManagementController {
 		}
 		return map;
 	}
-
+	//Depart생성 처리 
 	@RequestMapping(value = "/insertDepartmentClassPage.do", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Boolean> insertDepartmentClassPage(Model model, DepartmentDto ddto) {
@@ -163,7 +163,7 @@ public class ManagementController {
 		return "management/modyMemberUser";
 	}
 
-	// 03-16
+	// 사용자 수정 페이지
 	@RequestMapping(value = "/modyMemberUserPage.do", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public Map<String, Boolean> modyMemberUserPage(Model model, MemberDto memDto, HttpServletRequest req) {
@@ -185,6 +185,7 @@ public class ManagementController {
 	}
 
 	// 03-11 수정
+	//Depart사용자 수정 페이지
 	@RequestMapping(value = "/updateDepatrUser.do", method = { RequestMethod.GET, RequestMethod.POST })
 	public String updateDepatrUser(Model model, String dept_no, String dept_top, MemberDto dto) {
 		List<MemberDto> lists = managementService.selectListClassMaster(dept_no);
@@ -220,14 +221,14 @@ public class ManagementController {
 		return map;
 	}
 
-	//// 03-10
+	//
 	@RequestMapping(value = "/insertDepartment.do", method = { RequestMethod.GET, RequestMethod.POST })
 	public String insertDepartment(Model model) {
 		List<MemberDto> Dlist = managementService.selectListClassDel();
 		model.addAttribute("Dlist", Dlist);
 		return "management/insertDepartment";
 	}
-
+	//Depart삭제 처리 페이지
 	@RequestMapping(value = "/delDepatrClassPage.do", method = { RequestMethod.GET, RequestMethod.POST })
 	public String delDepatrClassPage(String dept_no) {
 		managementService.updateDelfalag(dept_no);
